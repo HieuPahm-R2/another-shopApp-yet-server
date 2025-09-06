@@ -4,7 +4,9 @@ import java.util.List;
 
 import com.hustVN.otherShopYet.model.dtos.CategoryDTO;
 import com.hustVN.otherShopYet.model.entity.Category;
+import org.springframework.stereotype.Service;
 
+@Service
 public interface ICategoryService {
     Category createCategory(CategoryDTO categoryDTO);
 

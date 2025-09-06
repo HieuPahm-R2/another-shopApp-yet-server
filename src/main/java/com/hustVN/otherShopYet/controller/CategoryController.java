@@ -2,6 +2,7 @@ package com.hustVN.otherShopYet.controller;
 
 import com.hustVN.otherShopYet.model.dtos.CategoryDTO;
 import com.hustVN.otherShopYet.model.entity.Category;
+import com.hustVN.otherShopYet.service.ICategoryService;
 import com.hustVN.otherShopYet.service.implement.CategoryService;
 import jakarta.validation.*;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/categories")
 public class CategoryController {
-    private final CategoryService categoryService;
+    private final ICategoryService categoryService;
 
     @GetMapping("")
     public ResponseEntity<List<Category>> getAllCategories(
