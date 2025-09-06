@@ -1,44 +1,57 @@
 package com.hustVN.otherShopYet.controller;
 
-import com.hustVN.otherShopYet.domain.dtos.CategoryDTO;
+import com.hustVN.otherShopYet.model.dtos.CategoryDTO;
+import com.hustVN.otherShopYet.model.entity.Category;
+import com.hustVN.otherShopYet.service.implement.CategoryService;
 import jakarta.validation.*;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("/api/v1/categories")
 public class CategoryController {
+    private final CategoryService categoryService;
+
     @GetMapping("")
-    public ResponseEntity<String> getAllCategories(
+    public ResponseEntity<List<Category>> getAllCategories(
             @RequestParam("page") int page,
-            @RequestParam("limit") int limit
-    ) {
-        return ResponseEntity.ok("get categories done");
+            @RequestParam("limit") int limit) {
+        List<Category> categories = categoryService.getAllCategories();
+        return ResponseEntity.ok(categories);
     }
+
     @PostMapping("")
-    public ResponseEntity<?> insertCategory(
+    public ResponseEntity<?> createCategory(
             @Valid @RequestBody CategoryDTO categoryDTO, BindingResult result) {
-       try{
-           if (result.hasErrors()) {
-               List<String> res = result.getFieldErrors().stream().map(FieldError::getDefaultMessage).toList();
-               return ResponseEntity.badRequest().body(res);
-           }
-           return ResponseEntity.ok("get categories done" + categoryDTO);
-       }catch (Exception e){
-           return ResponseEntity.badRequest().body(e.getMessage());
-       }
+        if (result.hasErrors()) {
+            List<String> res = result.getFieldErrors().stream().map(FieldError::getDefaultMessage).toList();
+            return ResponseEntity.badRequest().body(res);
+        }
+        categoryService.createCategory(categoryDTO);
+        return ResponseEntity.ok("get categories done" + categoryDTO);
+
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Category> getCategoryByID(@PathVariable("id") long id) {
+        return ResponseEntity.ok(categoryService.getCategoryById(id));
+    }
+
     @PutMapping("/{id}")
-    public ResponseEntity<String> updateCategory(@PathVariable("id") long id) {
-        return ResponseEntity.ok("get categories done");
+    public ResponseEntity<String> updateCategory(@PathVariable("id") long id, @RequestBody CategoryDTO categoryDTO) {
+        categoryService.updateCategory(id, categoryDTO);
+        return ResponseEntity.ok("update categories done with" + id);
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCategory(@PathVariable("id") long id) {
+        categoryService.deleteCategory(id);
         return ResponseEntity.ok("get categories done");
     }
 }

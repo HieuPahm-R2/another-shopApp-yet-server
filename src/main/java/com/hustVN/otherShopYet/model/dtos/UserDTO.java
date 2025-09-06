@@ -1,4 +1,4 @@
-package com.hustVN.otherShopYet.domain.dtos;
+package com.hustVN.otherShopYet.model.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
@@ -19,6 +19,7 @@ public class UserDTO {
     @JsonProperty("phone_number")
     @NotBlank(message = "phone number not be blank")
     private String phoneNumber;
+
     @NotBlank(message = "email not be blank")
     private String email;
     @NotBlank(message = "Password not can be blank")

@@ -1,4 +1,4 @@
-package com.hustVN.otherShopYet.domain.dtos;
+package com.hustVN.otherShopYet.model.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;

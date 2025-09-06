@@ -1,4 +1,6 @@
-package com.hustVN.otherShopYet.domain.models;
+package com.hustVN.otherShopYet.model.entity;
+
+import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -31,4 +33,5 @@ public class Product extends BaseEntity {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
+
 }

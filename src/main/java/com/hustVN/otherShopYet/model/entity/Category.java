@@ -1,4 +1,4 @@
-package com.hustVN.otherShopYet.domain.models;
+package com.hustVN.otherShopYet.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,6 +10,7 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

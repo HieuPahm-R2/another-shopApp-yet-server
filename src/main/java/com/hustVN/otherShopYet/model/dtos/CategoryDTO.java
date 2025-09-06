@@ -1,4 +1,4 @@
-package com.hustVN.otherShopYet.domain.dtos;
+package com.hustVN.otherShopYet.model.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;

@@ -1,4 +1,4 @@
-package com.hustVN.otherShopYet.domain.models;
+package com.hustVN.otherShopYet.model.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
