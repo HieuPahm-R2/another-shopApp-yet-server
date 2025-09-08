@@ -1,37 +1,63 @@
 package com.hustVN.otherShopYet.controller;
 
+import com.hustVN.otherShopYet.model.entity.OrderDetail;
+import com.hustVN.otherShopYet.response.OrderDetailResponse;
+import com.hustVN.otherShopYet.service.IOrderDetailService;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.hustVN.otherShopYet.model.dtos.OrderDetailDTO;
 
+import java.util.List;
+
 @RestController
+@RequiredArgsConstructor
 @RequestMapping("${api.prefix}/order_details")
 public class OrderDetailController {
+    private final IOrderDetailService orderDetailService;
+
     @PostMapping("")
     public ResponseEntity<?> createOrderDetail(@Valid @RequestBody OrderDetailDTO orderDetailDTO) {
-        return ResponseEntity.ok("Create Done");
+        try{
+            OrderDetail res = orderDetailService.createOrderDetail(orderDetailDTO);
+            return ResponseEntity.ok(OrderDetailResponse.from(res));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getOrderDetail(@Valid @PathVariable("id") long id) {
-        return ResponseEntity.ok("get DONE");
+        try {
+            return ResponseEntity.ok(orderDetailService.getOrderDetail(id));
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/order/{orderDetailId}")
     public ResponseEntity<?> getListOrderDetails(@Valid @PathVariable("orderDetailId") long id) {
-        return ResponseEntity.ok("get List orderDetails DONE");
+        List<OrderDetail> orderDetails = orderDetailService.findByOrderId(id);
+        List<OrderDetailResponse> res = orderDetails.stream().map(OrderDetailResponse::from).toList();
+        return ResponseEntity.ok(res);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> updateOderDetails(@Valid @PathVariable("id") long id,
-            @RequestBody OrderDetailDTO orderDetailDTO) {
-        return ResponseEntity.ok("update DONE");
+            @RequestBody OrderDetailDTO dto) {
+        try {
+            OrderDetail orderDetail = orderDetailService.updateOrderDetail(id, dto);
+            return ResponseEntity.ok(orderDetail);
+        }catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteDetailOrder(@Valid @PathVariable("id") long id) {
+        orderDetailService.deleteById(id);
         return ResponseEntity.noContent().build();
     }
 }

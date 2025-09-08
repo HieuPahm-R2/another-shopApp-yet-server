@@ -25,3 +25,7 @@ spring:
       max-request-size: 10MB
 api:
   prefix: /api/v1
+jwt:
+  expiration: 2592000 #30 days
+  expiration-refresh-token: 5184000 #60 days
+  secretKey: helloWorld

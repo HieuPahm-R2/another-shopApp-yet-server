@@ -5,6 +5,7 @@ import com.hustVN.otherShopYet.model.entity.Order;
 import com.hustVN.otherShopYet.model.entity.OrderDetail;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -37,7 +38,7 @@ public class OrderResponse {
 
     @JsonProperty("order_date")
     //@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", timezone = "UTC")
-    private LocalDateTime orderDate;
+    private LocalDate orderDate;
 
     @JsonProperty("status")
     private String status;
@@ -52,7 +53,7 @@ public class OrderResponse {
     private String shippingAddress;
 
     @JsonProperty("shipping_date")
-    private Date shippingDate;
+    private LocalDate shippingDate;
 
     @JsonProperty("payment_method")
     private String paymentMethod;
