@@ -1,7 +1,5 @@
 package com.hustVN.otherShopYet.model.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,7 +18,7 @@ public class Product extends BaseEntity {
     @Column(name = "name", nullable = false, length = 350)
     private String name;
 
-    private Float price;
+    private Double price;
 
     @Column(name = "description")
     private String description;

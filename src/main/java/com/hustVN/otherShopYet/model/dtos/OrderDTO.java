@@ -3,7 +3,10 @@ package com.hustVN.otherShopYet.model.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
+
+import java.time.LocalDate;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,7 +24,11 @@ public class OrderDTO {
 
     @JsonProperty("phone_number")
     @NotBlank(message = "phone number not be blank")
+    @Size(min = 5, message = "Phone number must be at least 5 characters")
     private String phoneNumber;
+
+    @JsonProperty("status")
+    private String status;
 
     private String address;
 
@@ -31,6 +38,9 @@ public class OrderDTO {
     private Float totalMoney;
     @JsonProperty("shipping_method")
     private String shippingMethod;
+
+    @JsonProperty("shipping_date")
+    private LocalDate shippingDate;
 
     @JsonProperty("shipping_address")
     private String ShippingAddress;

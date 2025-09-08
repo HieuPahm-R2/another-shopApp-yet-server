@@ -5,6 +5,7 @@ import com.hustVN.otherShopYet.model.dtos.ProductDTO;
 import com.hustVN.otherShopYet.model.dtos.ProductImageDTO;
 import com.hustVN.otherShopYet.model.entity.Product;
 import com.hustVN.otherShopYet.model.entity.ProductImage;
+import com.hustVN.otherShopYet.response.ProductResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,9 +17,9 @@ import java.util.List;
 public interface IProductService {
     Product addProduct(ProductDTO dto) throws DataNotFoundException;
     Product getProductById(long id) throws  Exception;
-   Page<Product> getAllProducts(PageRequest pageRequest);
+   Page<ProductResponse> getAllProducts(PageRequest pageRequest);
    Product updateProduct(long id, ProductDTO dto) throws  Exception;
    void deleteProduct(long id);
    boolean existsByName(String name);
-   public ProductImage createProductImage(Long id, ProductImageDTO dto) throws Exception;
+   ProductImage createProductImage(Long id, ProductImageDTO dto) throws Exception;
 }

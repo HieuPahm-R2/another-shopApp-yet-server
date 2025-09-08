@@ -10,14 +10,19 @@ import com.hustVN.otherShopYet.model.entity.ProductImage;
 import com.hustVN.otherShopYet.repo.CategoryRepository;
 import com.hustVN.otherShopYet.repo.ProductImageRepository;
 import com.hustVN.otherShopYet.repo.ProductRepository;
+import com.hustVN.otherShopYet.response.ProductResponse;
 import com.hustVN.otherShopYet.service.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
+
 @RequiredArgsConstructor
+@Service
 public class ProductService implements IProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
@@ -46,8 +51,8 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Page<Product> getAllProducts(PageRequest pageRequest) {
-        return productRepository.findAll(pageRequest);
+    public Page<ProductResponse> getAllProducts(PageRequest pageRequest) {
+        return productRepository.findAll(pageRequest).map(ProductResponse::from);
     }
 
     @Override

@@ -3,7 +3,6 @@ package com.hustVN.otherShopYet.controller;
 import com.hustVN.otherShopYet.model.dtos.CategoryDTO;
 import com.hustVN.otherShopYet.model.entity.Category;
 import com.hustVN.otherShopYet.service.ICategoryService;
-import com.hustVN.otherShopYet.service.implement.CategoryService;
 import jakarta.validation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
