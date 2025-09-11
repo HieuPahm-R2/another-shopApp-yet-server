@@ -1,6 +1,8 @@
 package com.hustVN.otherShopYet.controller;
 
+import com.hustVN.otherShopYet.components.LocalizationUtils;
 import com.hustVN.otherShopYet.model.entity.OrderDetail;
+import com.hustVN.otherShopYet.response.MessageKey;
 import com.hustVN.otherShopYet.response.OrderDetailResponse;
 import com.hustVN.otherShopYet.service.IOrderDetailService;
 import jakarta.validation.Valid;
@@ -17,6 +19,7 @@ import java.util.List;
 @RequestMapping("${api.prefix}/order_details")
 public class OrderDetailController {
     private final IOrderDetailService orderDetailService;
+    private final LocalizationUtils localizationUtils;
 
     @PostMapping("")
     public ResponseEntity<?> createOrderDetail(@Valid @RequestBody OrderDetailDTO orderDetailDTO) {
@@ -56,8 +59,9 @@ public class OrderDetailController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteDetailOrder(@Valid @PathVariable("id") long id) {
+    public ResponseEntity<?> deleteDetailOrder(@Valid @PathVariable("id") long id) {
         orderDetailService.deleteById(id);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().body(localizationUtils
+                .getLocalizedMessage(MessageKey.DELETE_ORDER_DETAIL_SUCCESSFULLY));
     }
 }

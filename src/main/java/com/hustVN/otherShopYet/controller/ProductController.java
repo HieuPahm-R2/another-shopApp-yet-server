@@ -1,6 +1,7 @@
 package com.hustVN.otherShopYet.controller;
 
 import com.github.javafaker.Faker;
+import com.hustVN.otherShopYet.components.LocalizationUtils;
 import com.hustVN.otherShopYet.model.dtos.ProductImageDTO;
 import com.hustVN.otherShopYet.model.entity.Product;
 import com.hustVN.otherShopYet.model.entity.ProductImage;
@@ -11,6 +12,7 @@ import com.hustVN.otherShopYet.service.IProductService;
 import com.hustVN.otherShopYet.service.implement.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -39,6 +41,7 @@ import java.util.UUID;
 @RequestMapping("${api.prefix}/products")
 public class ProductController {
     private final IProductService productService;
+    private final LocalizationUtils localizationUtils;
 
     @GetMapping("")
     public ResponseEntity<ProductListResponse> getAllProducts(
@@ -122,13 +125,12 @@ public class ProductController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
-        // handle null error
 
     }
     // handle file upload
     private String storeFile(MultipartFile file) throws IOException {
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
-        // use uuid to generate unique file name
+        // use uuid to generate unique
         String uniqueFileName = UUID.randomUUID().toString() + "_" + fileName;
         Path uploadDir = Paths.get("uploads");
         if (!Files.exists(uploadDir)) {
@@ -140,7 +142,26 @@ public class ProductController {
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         return uniqueFileName;
     }
+// handle view image
+@GetMapping("/images/{imageName}")
+public ResponseEntity<?> viewImage(@PathVariable String imageName) {
+    try {
+        Path imagePath = Paths.get("uploads/" + imageName);
+        UrlResource resource = new UrlResource(imagePath.toUri());
 
+        if (resource.exists()) {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(resource);
+        } else {
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_JPEG)
+                    .body(new UrlResource(Paths.get("uploads/notfound.jpeg").toUri()));
+        }
+    } catch (Exception e) {
+        return ResponseEntity.notFound().build();
+    }
+}
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteProduct(@PathVariable("id") long id) {
         try {

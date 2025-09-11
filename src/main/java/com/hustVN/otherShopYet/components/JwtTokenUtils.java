@@ -2,12 +2,12 @@ package com.hustVN.otherShopYet.components;
 
 import com.hustVN.otherShopYet.exception.InvalidParamException;
 import com.hustVN.otherShopYet.model.entity.User;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -20,6 +20,7 @@ import java.util.function.Function;
 @Component
 @RequiredArgsConstructor
 public class JwtTokenUtils {
+    private static final Logger logger = LoggerFactory.getLogger(JwtTokenUtils.class);
     @Value("${jwt.expiration}")
     private int expiration; // save to an environment variable
     @Value("${jwt.expiration-refresh-token}")
@@ -68,5 +69,26 @@ public class JwtTokenUtils {
 
     public String extractPhoneNumber(String token) {
         return extractClaim(token, Claims::getSubject);
+    }
+    public boolean validateToken(String token, User userDetails) {
+        try {
+            String phoneNumber = extractPhoneNumber(token);
+//            Token existingToken = tokenRepository.findByToken(token);
+            if (token == null ||
+                    !userDetails.isActive()) {
+                return false;
+            }
+            return (phoneNumber.equals(userDetails.getUsername()))
+                    && !isTokenExpired(token);
+        } catch (MalformedJwtException e) {
+            logger.error("Invalid JWT token: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            logger.error("JWT token is expired: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            logger.error("JWT token is unsupported: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            logger.error("JWT claims string is empty: {}", e.getMessage());
+        }
+        return false;
     }
 }

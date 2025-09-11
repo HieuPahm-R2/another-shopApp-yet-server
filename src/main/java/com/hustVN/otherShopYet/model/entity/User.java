@@ -31,8 +31,8 @@ public class User implements UserDetails {
     private String password;
     @Column(name = "address", length = 200)
     private String address;
-
-    private boolean active;
+    @Column(name = "is_active")
+    private boolean isActive;
     @Column(name = "date_of_birth")
     private Date dateOfBirth;
     @Column(name = "facebook_account_id")
@@ -49,7 +49,6 @@ public class User implements UserDetails {
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorityList = new ArrayList<>();
         authorityList.add(new SimpleGrantedAuthority("ROLE_" + getRole().getName().toUpperCase()));
-        //authorityList.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
         return authorityList;
     }
 

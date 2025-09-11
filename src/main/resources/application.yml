@@ -25,7 +25,11 @@ spring:
       max-request-size: 10MB
 api:
   prefix: /api/v1
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+    default-locale: en
 jwt:
   expiration: 2592000 #30 days
   expiration-refresh-token: 5184000 #60 days
-  secretKey: helloWorld
+  secretKey: TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI=
