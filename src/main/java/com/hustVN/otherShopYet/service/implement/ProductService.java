@@ -16,7 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
@@ -29,6 +31,7 @@ public class ProductService implements IProductService {
     private final ProductImageRepository productImageRepository;
 
     @Override
+    @Transactional
     public Product addProduct(ProductDTO dto) throws DataNotFoundException {
         Category cate = categoryRepository.findById((dto.getCategoryId())).orElseThrow(
                 () -> new DataNotFoundException("Category not found")
@@ -51,11 +54,18 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public Page<ProductResponse> getAllProducts(PageRequest pageRequest) {
-        return productRepository.findAll(pageRequest).map(ProductResponse::from);
+    public Page<ProductResponse> getAllProducts(String keyword, Long cateId,PageRequest pageRequest) {
+        Page<Product> productPage = productRepository.searchFilterOnKeyword(keyword,cateId,pageRequest);
+        return productPage.map(ProductResponse::from);
     }
 
     @Override
+    public List<Product> findProductsByIds(List<Long> productIds) {
+        return productRepository.findAllById(productIds);
+    }
+
+    @Override
+    @Transactional
     public Product updateProduct(long id, ProductDTO dto) throws Exception {
         Product product =getProductById(id);
         if(product != null) {
@@ -73,6 +83,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    @Transactional
     public void deleteProduct(long id) {
         Optional<Product> product = productRepository.findById(id);
         product.ifPresent(productRepository::delete);
@@ -84,6 +95,7 @@ public class ProductService implements IProductService {
     }
 
     @Override
+    @Transactional
     public ProductImage createProductImage(Long id,ProductImageDTO dto) throws Exception {
        Product existProduct = productRepository.findById(id).orElseThrow(
                 () -> new  DataNotFoundException("Not Found")

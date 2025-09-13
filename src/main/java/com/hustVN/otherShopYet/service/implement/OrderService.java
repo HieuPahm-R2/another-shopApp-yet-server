@@ -13,6 +13,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +27,7 @@ public class OrderService implements IOrderService {
     private final ModelMapper modelMapper;
 
     @Override
+    @Transactional
     public Order createOrder(OrderDTO orderDTO) throws Exception {
         User user = userRepository.findById(orderDTO.getUserId()).orElseThrow(
                 () -> new DataNotFoundException("User not found"));
@@ -56,6 +58,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    @Transactional
     public Order updateOrder(Long id, OrderDTO orderDTO) throws DataNotFoundException {
         User user = userRepository.findById(orderDTO.getUserId()).orElseThrow(() -> new DataNotFoundException("Not Found User"));
         Order order = orderRepository.findById(id).orElseThrow(() -> new DataNotFoundException("Not Found Order"));
@@ -68,6 +71,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    @Transactional
     public void deleteOrder(Long id) {
         Order order = orderRepository.findById(id).orElse(null);
         if(order != null) {
@@ -77,6 +81,7 @@ public class OrderService implements IOrderService {
     }
 
     @Override
+    @Transactional
     public List<Order> findByUserId(Long userId) {
         return orderRepository.findByUserId(userId);
     }

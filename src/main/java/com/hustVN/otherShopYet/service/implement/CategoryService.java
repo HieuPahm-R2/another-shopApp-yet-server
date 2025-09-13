@@ -6,6 +6,7 @@ import com.hustVN.otherShopYet.repo.CategoryRepository;
 import com.hustVN.otherShopYet.service.ICategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -15,6 +16,7 @@ public class CategoryService implements ICategoryService {
     private final CategoryRepository categoryRepository;
 
     @Override
+    @Transactional
     public Category createCategory(CategoryDTO categoryDTO) {
         Category newCate = Category.builder()
                 .name(categoryDTO.getName())
@@ -29,6 +31,7 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
+    @Transactional
     public Category updateCategory(long id, CategoryDTO categoryDTO) {
         Category updCate = getCategoryById(id);
         updCate.setName(categoryDTO.getName());
@@ -41,6 +44,7 @@ public class CategoryService implements ICategoryService {
     }
 
     @Override
+    @Transactional
     public void deleteCategory(long id) {
         categoryRepository.deleteById(id);
     }

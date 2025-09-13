@@ -17,9 +17,11 @@ import java.util.List;
 public interface IProductService {
     Product addProduct(ProductDTO dto) throws DataNotFoundException;
     Product getProductById(long id) throws  Exception;
-   Page<ProductResponse> getAllProducts(PageRequest pageRequest);
+   Page<ProductResponse> getAllProducts(String keyword,Long cateId,PageRequest pageRequest);
    Product updateProduct(long id, ProductDTO dto) throws  Exception;
    void deleteProduct(long id);
+   List<Product> findProductsByIds(List<Long> productIds);
+
    boolean existsByName(String name);
    ProductImage createProductImage(Long id, ProductImageDTO dto) throws Exception;
 }

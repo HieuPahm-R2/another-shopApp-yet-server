@@ -45,10 +45,12 @@ public class ProductController {
 
     @GetMapping("")
     public ResponseEntity<ProductListResponse> getAllProducts(
-            @RequestParam("page") int page, @RequestParam("limit") int limit) {
-        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("createdAt").descending());
-        List<ProductResponse> products = productService.getAllProducts(pageRequest).getContent();
-        int totalPages = productService.getAllProducts(pageRequest).getTotalPages();
+            @RequestParam(defaultValue = "")String keyword,@RequestParam(defaultValue = "0", name = "category_id")Long categoryId,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int limit) {
+        PageRequest pageRequest = PageRequest.of(
+                page, limit, Sort.by("id").ascending());
+        List<ProductResponse> products = productService.getAllProducts(keyword,categoryId,pageRequest).getContent();
+        int totalPages = productService.getAllProducts(keyword,categoryId,pageRequest).getTotalPages();
         return ResponseEntity.ok(ProductListResponse.builder()
                         .products(products)
                         .totalPages(totalPages)
@@ -156,7 +158,7 @@ public ResponseEntity<?> viewImage(@PathVariable String imageName) {
         } else {
             return ResponseEntity.ok()
                     .contentType(MediaType.IMAGE_JPEG)
-                    .body(new UrlResource(Paths.get("uploads/notfound.jpeg").toUri()));
+                    .body(new UrlResource(Paths.get("uploads/nonomi.jpg").toUri()));
         }
     } catch (Exception e) {
         return ResponseEntity.notFound().build();

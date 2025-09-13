@@ -11,6 +11,7 @@ import com.hustVN.otherShopYet.repo.ProductRepository;
 import com.hustVN.otherShopYet.service.IOrderDetailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,6 +23,7 @@ public class OrderDetailService implements IOrderDetailService {
     private final ProductRepository productRepository;
 
     @Override
+    @Transactional
     public OrderDetail createOrderDetail(OrderDetailDTO dto) throws Exception {
         Order existOrder = orderRepository.findById(dto.getOrderId()).orElseThrow(
                 () -> new DataNotFoundException("Order not found"));
@@ -44,6 +46,7 @@ public class OrderDetailService implements IOrderDetailService {
     }
 
     @Override
+    @Transactional
     public OrderDetail updateOrderDetail(Long id, OrderDetailDTO dto) throws DataNotFoundException {
         //tìm xem order detail có tồn tại ko
         OrderDetail existOrderDetail = orderDetailRepository.findById(id).orElseThrow(
@@ -61,6 +64,7 @@ public class OrderDetailService implements IOrderDetailService {
     }
 
     @Override
+    @Transactional
     public void deleteById(Long id) {
         orderDetailRepository.deleteById(id);
     }

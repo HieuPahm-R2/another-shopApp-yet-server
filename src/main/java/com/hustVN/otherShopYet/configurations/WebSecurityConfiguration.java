@@ -42,12 +42,14 @@ public class WebSecurityConfiguration {
                                     String.format("%s/users/login", apiPrefix),
                                     String.format("%s/users/register", apiPrefix)
                             ).permitAll()
-                            .requestMatchers(GET, String.format("%s/categories?**", apiPrefix)).hasAnyRole("USER","ADMIN")
+                            .requestMatchers(GET, String.format("%s/categories", apiPrefix)).permitAll()
+                            .requestMatchers(GET, String.format("%s/categories/**", apiPrefix)).permitAll()
                             .requestMatchers(PUT, String.format("%s/categories/**", apiPrefix)).hasAnyRole("ADMIN")
                             .requestMatchers(POST, String.format("%s/categories/**", apiPrefix)).hasAnyRole("ADMIN")
                             .requestMatchers(DELETE, String.format("%s/categories/**", apiPrefix)).hasAnyRole("ADMIN")
 
-                            .requestMatchers(GET, String.format("%s/products?**", apiPrefix)).hasAnyRole("USER","ADMIN")
+                            .requestMatchers(GET, String.format("%s/products", apiPrefix)).permitAll()
+                            .requestMatchers(GET, String.format("%s/products/**", apiPrefix)).permitAll()
                             .requestMatchers(PUT, String.format("%s/products/**", apiPrefix)).hasAnyRole("ADMIN")
                             .requestMatchers(POST, String.format("%s/products/**", apiPrefix)).hasAnyRole("ADMIN")
                             .requestMatchers(DELETE, String.format("%s/products/**", apiPrefix)).hasAnyRole("ADMIN")
@@ -62,8 +64,7 @@ public class WebSecurityConfiguration {
                             .requestMatchers(POST, String.format("%s/order_details/**", apiPrefix)).hasAnyRole("ADMIN")
                             .requestMatchers(DELETE, String.format("%s/order_details/**", apiPrefix)).hasAnyRole("ADMIN")
 
-                            .requestMatchers(GET, String.format("%s/products/images/*", apiPrefix)).permitAll()
-                            .requestMatchers(POST, String.format("%s/products/upload/**", apiPrefix)).hasAnyRole("admin")
+                            .requestMatchers(POST, String.format("%s/products/upload/**", apiPrefix)).hasAnyRole("ADMIN")
                             .anyRequest().authenticated();
                 });
         http.cors(new Customizer<CorsConfigurer<HttpSecurity>>() {
