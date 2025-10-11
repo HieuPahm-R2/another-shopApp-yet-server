@@ -3,6 +3,8 @@ package com.hustVN.otherShopYet.model.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "products")
 @NoArgsConstructor
@@ -10,6 +12,8 @@ import lombok.*;
 @Getter
 @Setter
 @Builder
+//Event-driven approach with Spring Data JPA
+@EntityListeners(ProductListener.class)
 public class Product extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,4 +34,6 @@ public class Product extends BaseEntity {
     @JoinColumn(name = "category_id")
     private Category category;
 
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ProductImage> productImages;
 }

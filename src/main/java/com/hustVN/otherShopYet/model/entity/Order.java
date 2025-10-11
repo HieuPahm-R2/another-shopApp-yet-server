@@ -53,7 +53,7 @@ public class Order {
     @Column(name = "payment_method")
     private String paymentMethod;
     @Column(name = "active")
-    private boolean active;
+    private Boolean active;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JsonManagedReference

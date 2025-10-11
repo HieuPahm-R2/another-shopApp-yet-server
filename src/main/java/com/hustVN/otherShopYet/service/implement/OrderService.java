@@ -1,11 +1,12 @@
 package com.hustVN.otherShopYet.service.implement;
 
 import com.hustVN.otherShopYet.exception.DataNotFoundException;
+import com.hustVN.otherShopYet.model.dtos.CartItemDTO;
 import com.hustVN.otherShopYet.model.dtos.OrderDTO;
-import com.hustVN.otherShopYet.model.entity.Order;
-import com.hustVN.otherShopYet.model.entity.OrderStatus;
-import com.hustVN.otherShopYet.model.entity.User;
+import com.hustVN.otherShopYet.model.entity.*;
+import com.hustVN.otherShopYet.repo.OrderDetailRepository;
 import com.hustVN.otherShopYet.repo.OrderRepository;
+import com.hustVN.otherShopYet.repo.ProductRepository;
 import com.hustVN.otherShopYet.repo.UserRepository;
 import com.hustVN.otherShopYet.service.IOrderService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -25,6 +27,8 @@ public class OrderService implements IOrderService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final ProductRepository productRepository;
+    private final OrderDetailRepository orderDetailRepository;
 
     @Override
     @Transactional
@@ -49,7 +53,23 @@ public class OrderService implements IOrderService {
         order.setActive(true);
         //EAV-Entity-Attribute-Value model
         order.setTotalMoney(orderDTO.getTotalMoney());
-       return orderRepository.save(order);
+        orderRepository.save(order);
+        // Tạo các đối tượng OrderDetail từ cartItems
+        List<OrderDetail> orderDetails = new ArrayList<>();
+        for(CartItemDTO cartItemDTO : orderDTO.getCartItems()){
+            OrderDetail orderDetail = new OrderDetail();
+            orderDetail.setOrder(order);
+            // Tìm thông tin từ cơ sở dữ liệu
+            Product product = productRepository.findById(cartItemDTO.getProductId()).orElseThrow(
+                    () -> new DataNotFoundException("Product not found"));
+            orderDetail.setProduct(product);
+            orderDetail.setNumberOfProducts(cartItemDTO.getQuantity());
+            orderDetail.setPrice(product.getPrice());
+
+            orderDetails.add(orderDetail);
+        }
+        orderDetailRepository.saveAll(orderDetails);
+       return order;
     }
 
     @Override
@@ -88,6 +108,6 @@ public class OrderService implements IOrderService {
 
     @Override
     public Page<Order> getOrdersByKeyword(String keyword, Pageable pageable) {
-        return null;
+        return orderRepository.findByKeyword(keyword, pageable);
     }
 }

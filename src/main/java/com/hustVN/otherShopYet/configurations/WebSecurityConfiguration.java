@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -16,7 +17,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,6 +26,7 @@ import static org.springframework.http.HttpMethod.*;
 @RequiredArgsConstructor
 @EnableWebMvc
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfiguration {
     private final JwtTokenFilter jwtTokenFilter;
     @Value("${api.prefix}")
@@ -40,46 +41,33 @@ public class WebSecurityConfiguration {
                     request
                             .requestMatchers(
                                     String.format("%s/users/login", apiPrefix),
-                                    String.format("%s/users/register", apiPrefix)
-                            ).permitAll()
-                            .requestMatchers(GET, String.format("%s/categories", apiPrefix)).permitAll()
+                                    String.format("%s/users/register", apiPrefix),
+                                    String.format("%s/healthcheck/**", apiPrefix),
+                                    // swagger
+                                    "/api-docs",
+                                    "/api-docs/**",
+                                    "/swagger-resources",
+                                    "/swagger-resources/**",
+                                    "/configuration/ui",
+                                    "/configuration/security",
+                                    "/swagger-ui/**",
+                                    "/swagger-ui.html",
+                                    "/webjars/swagger-ui/**",
+                                    "/swagger-ui/index.html")
+                            .permitAll()
+
                             .requestMatchers(GET, String.format("%s/categories/**", apiPrefix)).permitAll()
-                            .requestMatchers(PUT, String.format("%s/categories/**", apiPrefix)).hasAnyRole("ADMIN")
-                            .requestMatchers(POST, String.format("%s/categories/**", apiPrefix)).hasAnyRole("ADMIN")
-                            .requestMatchers(DELETE, String.format("%s/categories/**", apiPrefix)).hasAnyRole("ADMIN")
 
-                            .requestMatchers(GET, String.format("%s/products", apiPrefix)).permitAll()
                             .requestMatchers(GET, String.format("%s/products/**", apiPrefix)).permitAll()
-                            .requestMatchers(PUT, String.format("%s/products/**", apiPrefix)).hasAnyRole("ADMIN")
-                            .requestMatchers(POST, String.format("%s/products/**", apiPrefix)).hasAnyRole("ADMIN")
-                            .requestMatchers(DELETE, String.format("%s/products/**", apiPrefix)).hasAnyRole("ADMIN")
+                            .requestMatchers(GET, String.format("%s/products/images/*", apiPrefix)).permitAll()
 
-                            .requestMatchers(GET, String.format("%s/orders?**", apiPrefix)).hasAnyRole("USER","ADMIN")
-                            .requestMatchers(PUT, String.format("%s/orders/**", apiPrefix)).hasAnyRole("ADMIN")
-                            .requestMatchers(POST, String.format("%s/orders/**", apiPrefix)).hasAnyRole("ADMIN")
-                            .requestMatchers(DELETE, String.format("%s/orders/**", apiPrefix)).hasAnyRole("ADMIN")
+                            .requestMatchers(GET, String.format("%s/orders/**", apiPrefix)).permitAll()
 
-                            .requestMatchers(GET, String.format("%s/order_details?**", apiPrefix)).hasAnyRole("USER","ADMIN")
-                            .requestMatchers(PUT, String.format("%s/order_details/**", apiPrefix)).hasAnyRole("ADMIN")
-                            .requestMatchers(POST, String.format("%s/order_details/**", apiPrefix)).hasAnyRole("ADMIN")
-                            .requestMatchers(DELETE, String.format("%s/order_details/**", apiPrefix)).hasAnyRole("ADMIN")
+                            .requestMatchers(GET, String.format("%s/order_details/**", apiPrefix)).permitAll()
 
-                            .requestMatchers(POST, String.format("%s/products/upload/**", apiPrefix)).hasAnyRole("ADMIN")
                             .anyRequest().authenticated();
                 });
-        http.cors(new Customizer<CorsConfigurer<HttpSecurity>>() {
-            @Override
-            public void customize(CorsConfigurer<HttpSecurity> httpSecurityCorsConfigurer) {
-                CorsConfiguration corsConfiguration = new CorsConfiguration();
-                corsConfiguration.setAllowedOrigins(List.of("*"));
-                corsConfiguration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-                corsConfiguration.setAllowedHeaders(Arrays.asList("Content-Type", "Authorization", "x-auth-token", "Accept", "Access-Control-Request-Headers"));
-                corsConfiguration.setExposedHeaders(Arrays.asList("x-auth-token", "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"));
-                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/**", corsConfiguration);
-                httpSecurityCorsConfigurer.configurationSource(source);
-            }
-        });
+
         return http.build();
     }
 }

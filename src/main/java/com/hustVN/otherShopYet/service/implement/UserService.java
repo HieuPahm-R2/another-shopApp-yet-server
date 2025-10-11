@@ -1,13 +1,18 @@
 package com.hustVN.otherShopYet.service.implement;
 
 import com.hustVN.otherShopYet.components.JwtTokenUtils;
+import com.hustVN.otherShopYet.components.LocalizationUtils;
 import com.hustVN.otherShopYet.exception.DataNotFoundException;
+import com.hustVN.otherShopYet.exception.ExpiredTokenException;
+import com.hustVN.otherShopYet.model.dtos.UpdateUserDTO;
 import com.hustVN.otherShopYet.model.dtos.UserDTO;
 import com.hustVN.otherShopYet.model.entity.Role;
 import com.hustVN.otherShopYet.model.entity.User;
 import com.hustVN.otherShopYet.repo.RoleRepository;
 import com.hustVN.otherShopYet.repo.UserRepository;
+import com.hustVN.otherShopYet.response.MessageKey;
 import com.hustVN.otherShopYet.service.IUserService;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -22,11 +27,13 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Service
 public class UserService implements IUserService {
+
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtils jwtTokenUtils;
+    private final LocalizationUtils localizationUtils;
 
     @Override
     @Transactional
@@ -69,13 +76,65 @@ public class UserService implements IUserService {
         User existUser = user.get();
         if(existUser.getFacebookAccountId() == 0 && existUser.getGoogleAccountId() == 0){
             if(!passwordEncoder.matches(password, existUser.getPassword())){
-                throw new BadCredentialsException("Bad Credential, Oops..");
+                throw new BadCredentialsException(localizationUtils.getLocalizedMessage(MessageKey.WRONG_PHONE_PASSWORD));
             }
+        }
+        if(!user.get().isActive()){
+            throw new DataNotFoundException(localizationUtils.getLocalizedMessage(MessageKey.USER_IS_LOCKED));
         }
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                 phoneNumber, password, existUser.getAuthorities());
         authenticationManager.authenticate(authenticationToken);
 
         return jwtTokenUtils.generateToken(existUser);
+    }
+    @Override
+    public User getUserDetailsFromToken(String token) throws Exception {
+        if(jwtTokenUtils.isTokenExpired(token)){
+            throw new ExpiredTokenException("Token expired");
+        }
+        String phone = jwtTokenUtils.extractPhoneNumber(token);
+        Optional<User> user = userRepository.findByPhoneNumber(phone);
+        if(user.isPresent()){
+            return user.get();
+        }else{
+            throw new DataNotFoundException("User not found");
+        }
+    }
+
+    @Override
+    public User updateUser(Long userId, UpdateUserDTO updateUserDTO) throws Exception {
+        User existUser = userRepository.findById(userId).orElseThrow(
+                () -> new DataNotFoundException("User not found"));
+        String phoneNumber = updateUserDTO.getPhoneNumber();
+        if(userRepository.existsByPhoneNumber(phoneNumber) && !phoneNumber.equals(existUser.getPhoneNumber())){
+            throw new DataIntegrityViolationException("Phone number already exists");
+        }
+        if (updateUserDTO.getFullName() != null) {
+            existUser.setFullName(updateUserDTO.getFullName());
+        }
+        if (phoneNumber != null) {
+            existUser.setPhoneNumber(phoneNumber);
+        }
+        if (updateUserDTO.getAddress() != null) {
+            existUser.setAddress(updateUserDTO.getAddress());
+        }
+        if (updateUserDTO.getDateOfBirth() != null) {
+            existUser.setDateOfBirth(updateUserDTO.getDateOfBirth());
+        }
+        if (updateUserDTO.getFacebookAccountId() > 0) {
+            existUser.setFacebookAccountId(updateUserDTO.getFacebookAccountId());
+        }
+        if (updateUserDTO.getGoogleAccountId() > 0) {
+            existUser.setGoogleAccountId(updateUserDTO.getGoogleAccountId());
+        }
+        if(updateUserDTO.getPassword() != null && !updateUserDTO.getPassword().isEmpty()) {
+            if(!updateUserDTO.getPassword().equals(updateUserDTO.getRetypePassword())){
+                throw new DataIntegrityViolationException("Passwords don't match");
+            }
+            String newPassword = passwordEncoder.encode(updateUserDTO.getPassword());
+            existUser.setPassword(newPassword);
+        }
+        return userRepository.save(existUser);
     }
 }

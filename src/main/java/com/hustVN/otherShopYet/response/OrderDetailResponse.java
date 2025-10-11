@@ -18,7 +18,7 @@ public class OrderDetailResponse {
     @JsonProperty("product_id")
     private Long productId;
     @JsonProperty("price")
-    private Float price;
+    private Double price;
     @JsonProperty("number_of_products")
     private int numberOfProducts;
     @JsonProperty("total_money")

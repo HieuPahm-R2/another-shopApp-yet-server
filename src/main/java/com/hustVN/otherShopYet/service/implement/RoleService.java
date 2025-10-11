@@ -11,10 +11,10 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class RoleService implements IRoleService {
-    @Override
-    public List<Role> getAllRoles() {
-        return List.of();
-    }
 
     private final RoleRepository roleRepository;
+    @Override
+    public List<Role> getAllRoles() {
+        return roleRepository.findAll();
+    }
 }

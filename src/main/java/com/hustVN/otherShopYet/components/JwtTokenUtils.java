@@ -31,7 +31,7 @@ public class JwtTokenUtils {
     public String generateToken(User user) throws Exception{
         Map<String, Object> claims = new HashMap<>();
         claims.put("phoneNumber", user.getPhoneNumber());
-        claims.put("id", user.getId());
+        claims.put("userId", user.getId());
         try{
             String token = Jwts.builder()
                     .setClaims(claims) // extract claims from this
@@ -46,7 +46,6 @@ public class JwtTokenUtils {
     }
     private Key getSignInKey() {
         byte[] bytes = Decoders.BASE64.decode(secretKey);
-        // Keys.hmacShaKeyFor(Decoders.BASE64.decode("TaqlmGv1iEDMRiFp/pHuID1+T84IABfuA0xXh4GhiUI="));
         return Keys.hmacShaKeyFor(bytes);
     }
     private Claims extractAllClaims(String token) {
@@ -70,12 +69,12 @@ public class JwtTokenUtils {
     public String extractPhoneNumber(String token) {
         return extractClaim(token, Claims::getSubject);
     }
+
     public boolean validateToken(String token, User userDetails) {
         try {
             String phoneNumber = extractPhoneNumber(token);
 //            Token existingToken = tokenRepository.findByToken(token);
-            if (token == null ||
-                    !userDetails.isActive()) {
+            if (token == null || !userDetails.isActive()) {
                 return false;
             }
             return (phoneNumber.equals(userDetails.getUsername()))

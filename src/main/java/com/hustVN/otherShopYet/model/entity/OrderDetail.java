@@ -1,5 +1,7 @@
 package com.hustVN.otherShopYet.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -18,13 +20,15 @@ public class OrderDetail {
     @Column(name = "number_of_products", nullable = false)
     private int numberOfProducts;
     @Column(name = "price", nullable = false)
-    private Float price;
+    private Double price;
     @Column(name = "total_money", nullable = false)
     private Float totalMoney;
 
     @ManyToOne
     @JoinColumn(name = "order_id")
+    @JsonBackReference
     private Order order;
+
     @ManyToOne
     @JoinColumn(name = "product_id")
     private Product product;

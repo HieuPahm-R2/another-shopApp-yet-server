@@ -1,5 +1,6 @@
 package com.hustVN.otherShopYet.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.javafaker.Faker;
 import com.hustVN.otherShopYet.components.LocalizationUtils;
 import com.hustVN.otherShopYet.model.dtos.ProductImageDTO;
@@ -8,16 +9,20 @@ import com.hustVN.otherShopYet.model.entity.ProductImage;
 import com.hustVN.otherShopYet.response.ProductListResponse;
 import com.hustVN.otherShopYet.response.ProductResponse;
 import com.hustVN.otherShopYet.service.ICategoryService;
+import com.hustVN.otherShopYet.service.IProductRedisService;
 import com.hustVN.otherShopYet.service.IProductService;
 import com.hustVN.otherShopYet.service.implement.ProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -31,35 +36,56 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("${api.prefix}/products")
 public class ProductController {
     private final IProductService productService;
+    private final IProductRedisService productRedisService;
     private final LocalizationUtils localizationUtils;
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
 
     @GetMapping("")
     public ResponseEntity<ProductListResponse> getAllProducts(
-            @RequestParam(defaultValue = "")String keyword,@RequestParam(defaultValue = "0", name = "category_id")Long categoryId,
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int limit) {
-        PageRequest pageRequest = PageRequest.of(
-                page, limit, Sort.by("id").ascending());
-        List<ProductResponse> products = productService.getAllProducts(keyword,categoryId,pageRequest).getContent();
-        int totalPages = productService.getAllProducts(keyword,categoryId,pageRequest).getTotalPages();
-        return ResponseEntity.ok(ProductListResponse.builder()
-                        .products(products)
-                        .totalPages(totalPages)
+            @RequestParam(defaultValue = "")String keyword,@RequestParam(defaultValue = "0", name = "category_id", required = false)Long categoryId,
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "10") int limit) throws JsonProcessingException {
+        int totalPages = 0;
+        PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("id").ascending());
+        logger.info("keyword = {}, category_id = {}, page = {}, limit = {}", keyword, categoryId, page, limit);
+        // redis action
+        List<ProductResponse> productResponses = productRedisService.getAll(keyword, categoryId, pageRequest);
+        if(productResponses == null){
+            List<ProductResponse> products = productService.getAllProducts(keyword,categoryId,pageRequest).getContent();
+            totalPages = productService.getAllProducts(keyword,categoryId,pageRequest).getTotalPages();
+            productRedisService.saveAll(products, keyword, categoryId, pageRequest);
+        }
+
+        return ResponseEntity.ok(ProductListResponse
+                .builder()
+                .products(productResponses)
+                .totalPages(totalPages)
                 .build());
+    }
+    @GetMapping("/by-ids")
+    public ResponseEntity<?> getProductsByIds(@RequestParam("ids") String ids) {
+        // eg: 1,3,5,7
+        try {
+            //  ids thành một mảng các số nguyên
+            List<Long> productIds = Arrays.stream(ids.split(","))
+                    .map(Long::parseLong)
+                    .collect(Collectors.toList());
+            List<Product> products = productService.findProductsByIds(productIds);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> getProductById(
-            @PathVariable("id") Long id) {
+    public ResponseEntity<?> getProductById(@PathVariable("id") Long id) {
         try {
             Product existProduct = productService.getProductById(id);
             return ResponseEntity.ok(ProductResponse.from(existProduct));
@@ -68,6 +94,7 @@ public class ProductController {
         }
     }
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> updateProduct(@PathVariable long id, @Valid @RequestBody ProductDTO productDTO) {
         try {
             Product updatedProduct = productService.updateProduct(id, productDTO);
@@ -78,8 +105,8 @@ public class ProductController {
     }
 
     @PostMapping("")
-    public ResponseEntity<?> insertProduct(
-            @Valid @RequestBody ProductDTO productDTO, BindingResult result) {
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<?> insertProduct(@Valid @RequestBody ProductDTO productDTO, BindingResult result) {
         try {
             if (result.hasErrors()) {
                 List<String> res = result.getFieldErrors().stream().map(FieldError::getDefaultMessage).toList();
@@ -94,6 +121,7 @@ public class ProductController {
     }
 
     @PostMapping(value = "/upload/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<?> uploadImage(@PathVariable long id, @RequestParam(value = "files", required = false) List<MultipartFile> files){
         try {
             Product existProduct = productService.getProductById(id);
@@ -130,6 +158,7 @@ public class ProductController {
 
     }
     // handle file upload
+
     private String storeFile(MultipartFile file) throws IOException {
         String fileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
         // use uuid to generate unique
@@ -140,7 +169,7 @@ public class ProductController {
         }
         // đường dẫn đầy đủ đến file
         Path filePath = Paths.get(uploadDir.toString(), uniqueFileName);
-        // sao chép và lưu vào thư mục đích
+        // sao chép và lưu vào thư mục
         Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
         return uniqueFileName;
     }

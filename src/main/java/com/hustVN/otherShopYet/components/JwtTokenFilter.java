@@ -24,7 +24,8 @@ import java.util.List;
 public class JwtTokenFilter extends OncePerRequestFilter {
     private final UserDetailsService userDetailsService;
     private final JwtTokenUtils jwtTokenUtils;
-    @Value("${api.prefix}")
+
+    @Value(value = "${api.prefix}")
     private String apiPrefix;
 
     @Override
@@ -47,7 +48,9 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 User userData = (User) userDetailsService.loadUserByUsername(phoneNumber);
                 if(jwtTokenUtils.validateToken(token, userData)){
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userData, null, userData.getAuthorities());
+                            userData,
+                            null,
+                            userData.getAuthorities());
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }

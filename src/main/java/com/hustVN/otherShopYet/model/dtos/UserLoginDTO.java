@@ -2,6 +2,7 @@ package com.hustVN.otherShopYet.model.dtos;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,4 +22,8 @@ public class UserLoginDTO {
 
     @NotBlank(message = "Password not can be blank")
     private String password;
+
+    @Min(value = 1, message = "role_id is required")
+    @JsonProperty("role_id")
+    private Long roleId;
 }

@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
 -- Table for storing tokens for authentication and authorization
 CREATE TABLE tokens(
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NOT NULL,2
     token VARCHAR(255) UNIQUE NOT NULL,
     token_type VARCHAR(50) NOT NULL,
     expiration_date DATETIME,

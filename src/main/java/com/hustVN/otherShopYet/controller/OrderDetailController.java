@@ -8,6 +8,7 @@ import com.hustVN.otherShopYet.service.IOrderDetailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.hustVN.otherShopYet.model.dtos.OrderDetailDTO;
@@ -22,6 +23,7 @@ public class OrderDetailController {
     private final LocalizationUtils localizationUtils;
 
     @PostMapping("")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<?> createOrderDetail(@Valid @RequestBody OrderDetailDTO orderDetailDTO) {
         try{
             OrderDetail res = orderDetailService.createOrderDetail(orderDetailDTO);
@@ -48,6 +50,7 @@ public class OrderDetailController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<?> updateOderDetails(@Valid @PathVariable("id") long id,
             @RequestBody OrderDetailDTO dto) {
         try {
@@ -59,6 +62,7 @@ public class OrderDetailController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN') or hasRole('ROLE_USER')")
     public ResponseEntity<?> deleteDetailOrder(@Valid @PathVariable("id") long id) {
         orderDetailService.deleteById(id);
         return ResponseEntity.ok().body(localizationUtils
