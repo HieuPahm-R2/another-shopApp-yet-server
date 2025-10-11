@@ -26,6 +26,13 @@ spring:
     redis:
       port: ${REDIS_PORT:6379}
       host: ${REDIS_HOST:localhost}
+    #flyway
+    # Đường dẫn tới thư mục chứa các script Flyway
+  flyway:
+      locations: classpath:/db/migration,classpath:/dev/db/migration
+      #Phiên bản baseline sẽ = 0 và không thực hiện bất kỳ thay đổi nào trong DB
+      baseline-on-migrate: true
+      baseline-version: 0
 api:
   prefix: /api/v1
   messages:
