@@ -36,7 +36,7 @@ public class OrderController {
                 List<String> res = result.getFieldErrors().stream().map(FieldError::getDefaultMessage).toList();
                 return ResponseEntity.badRequest().body(res);
             }
-            return ResponseEntity.ok( orderService.createOrder(orderDTO));
+            return ResponseEntity.ok(orderService.createOrder(orderDTO));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
@@ -57,7 +57,7 @@ public class OrderController {
         try {
             OrderResponse orderResponse = OrderResponse.fromOrder(orderService.getOrder(id));
             return ResponseEntity.ok(orderResponse);
-        }catch (Exception e){
+        } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -81,13 +81,12 @@ public class OrderController {
         String result = localizationUtils.getLocalizedMessage(MessageKey.DELETE_ORDER_SUCCESSFULLY, id);
         return ResponseEntity.ok(result);
     }
+
     @GetMapping("/get-orders-by-keyword")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<OrderListResponse> getOrdersByKeyword(
             @RequestParam(defaultValue = "", required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int limit
-    ) {
+            @RequestParam(defaultValue = "10") int limit) {
         // Tạo Pageable từ thông tin trang và giới hạn
         PageRequest pageRequest = PageRequest.of(page, limit, Sort.by("id").ascending());
         Page<OrderResponse> orderPage = orderService

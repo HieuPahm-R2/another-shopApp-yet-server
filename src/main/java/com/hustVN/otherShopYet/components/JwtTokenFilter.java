@@ -12,6 +12,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -30,37 +31,39 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain) throws ServletException, IOException {
-        try{
-            if(isBypassToken(request)){
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
+        try {
+            if (isBypassToken(request)) {
                 filterChain.doFilter(request, response);
                 return;
             }
             final String authHeader = request.getHeader("Authorization");
-            if(authHeader == null || !authHeader.startsWith("Bearer ")){
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or missing JWT token");
                 return;
             }
             final String token = authHeader.substring(7);
             final String phoneNumber = jwtTokenUtils.extractPhoneNumber(token);
-            if(phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null){
+            if (phoneNumber != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 User userData = (User) userDetailsService.loadUserByUsername(phoneNumber);
-                if(jwtTokenUtils.validateToken(token, userData)){
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                if (jwtTokenUtils.validateToken(token, userData)) {
+                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
                             userData,
                             null,
                             userData.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 }
             }
             filterChain.doFilter(request, response);
-        }catch (Exception e){
+        } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid or missing JWT token");
             response.getWriter().write(e.getMessage());
         }
     }
-    public boolean isBypassToken(@NonNull HttpServletRequest request){
+
+    public boolean isBypassToken(@NonNull HttpServletRequest request) {
         final List<Pair<String, String>> bypassToken = Arrays.asList(
                 // Healthcheck request, no JWT token required
                 Pair.of(String.format("%s/healthcheck/health", apiPrefix), "GET"),
@@ -84,15 +87,14 @@ public class JwtTokenFilter extends OncePerRequestFilter {
                 Pair.of("/configuration/security", "GET"),
                 Pair.of("/swagger-ui/**", "GET"),
                 Pair.of("/swagger-ui.html", "GET"),
-                Pair.of("/swagger-ui/index.html", "GET")
-        );
+                Pair.of("/swagger-ui/index.html", "GET"));
         String requestPath = request.getServletPath();
         String requestMethod = request.getMethod();
-        for(Pair<String, String> token : bypassToken){
+        for (Pair<String, String> token : bypassToken) {
             String path = token.getFirst();
             String method = token.getSecond();
-            if(requestPath.matches(path.replace("**", ".*"))
-                    && requestMethod.equalsIgnoreCase(method)){
+            if (requestPath.matches(path.replace("**", ".*"))
+                    && requestMethod.equalsIgnoreCase(method)) {
                 return true;
             }
         }

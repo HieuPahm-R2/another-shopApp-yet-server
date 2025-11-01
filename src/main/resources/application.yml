@@ -5,7 +5,7 @@ spring:
     url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3307/ShopAppDB?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password: 12102005
+    password: ${MYSQL_ROOT_PASSWORD:12102005}
   jpa:
     show-sql: true
     hibernate:
@@ -14,8 +14,8 @@ spring:
       #Hibernate sẽ không tạo, sửa đổi hoặc xóa bất kỳ bảng, cột hay ràng buộc nào trong cơ sở dữ liệu
     properties:
       hibernate:
-      dialect: org.hibernate.dialect.MySQL8Dialect
-      format_sql: true
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
   application:
     name: otherShopYet
   servlet:
@@ -24,6 +24,7 @@ spring:
       max-request-size: 10MB
   data:
     redis:
+      use-redis-cache: false
       port: ${REDIS_PORT:6379}
       host: ${REDIS_HOST:localhost}
     #flyway
@@ -33,6 +34,19 @@ spring:
       #Phiên bản baseline sẽ = 0 và không thực hiện bất kỳ thay đổi nào trong DB
       baseline-on-migrate: true
       baseline-version: 0
+      validate-on-migrate: true
+  kafka:
+    client:
+      dns:
+        lookup: use_dns_cache
+    bootstrap-servers: ${KAFKA_BROKER_SERVER:localhost}:${KAFKA_BROKER_PORT:9092}
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      #transaction-id-prefix: tx.
+      properties:
+        "[spring.json.type.mapping]": category:com.hustVN.otherShopYet.model.entity.Category
+    consumer:
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
 api:
   prefix: /api/v1
   messages:

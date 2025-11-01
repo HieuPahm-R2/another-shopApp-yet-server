@@ -1,0 +1,29 @@
+-- 1️⃣ Tạo bảng coupons trước (vì các bảng khác cần FK đến nó)
+CREATE TABLE IF NOT EXISTS coupons (
+                                       id INT PRIMARY KEY AUTO_INCREMENT,
+                                       code VARCHAR(50) NOT NULL,
+    active BOOLEAN NOT NULL DEFAULT true
+    );
+
+-- 2️⃣ Sau đó mới tạo coupon_conditions
+DROP TABLE IF EXISTS coupon_conditions;
+CREATE TABLE coupon_conditions (
+                                   id INT AUTO_INCREMENT PRIMARY KEY,
+                                   coupon_id INT NOT NULL,
+                                   attribute VARCHAR(255) NOT NULL,
+                                   operator VARCHAR(10) NOT NULL,
+                                   value VARCHAR(255) NOT NULL,
+                                   discount_amount DECIMAL(5, 2) NOT NULL,
+                                   FOREIGN KEY (coupon_id) REFERENCES coupons(id)
+);
+
+-- 3️⃣ Sau cùng là thêm FK vào các bảng khác
+ALTER TABLE orders
+    ADD COLUMN coupon_id INT,
+ADD CONSTRAINT fk_orders_coupon
+FOREIGN KEY (coupon_id) REFERENCES coupons(id);
+
+ALTER TABLE order_details
+    ADD COLUMN coupon_id INT,
+ADD CONSTRAINT fk_order_details_coupon
+FOREIGN KEY (coupon_id) REFERENCES coupons(id);

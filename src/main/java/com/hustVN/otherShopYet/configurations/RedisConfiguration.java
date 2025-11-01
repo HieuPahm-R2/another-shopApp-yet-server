@@ -18,10 +18,10 @@ import java.time.format.DateTimeFormatter;
 
 @Configuration
 public class RedisConfiguration {
-    @Value("${spring.redis.host}") // Read 'spring.redis.host' property from application.yml
+    @Value("${spring.data.redis.host}")
     private String redisHost;
 
-    @Value("${spring.redis.port}") // Read 'spring.redis.port' property from application.yml
+    @Value("${spring.data.redis.port}")
     private int redisPort;
 
     @Bean

@@ -1,11 +1,13 @@
 package com.hustVN.otherShopYet.controller;
 
+import com.hustVN.otherShopYet.components.converters.CategoryMessageConvert;
 import com.hustVN.otherShopYet.model.dtos.CategoryDTO;
 import com.hustVN.otherShopYet.model.entity.Category;
 import com.hustVN.otherShopYet.service.ICategoryService;
 import jakarta.validation.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -18,12 +20,20 @@ import java.util.List;
 @RequestMapping("/api/v1/categories")
 public class CategoryController {
     private final ICategoryService categoryService;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @GetMapping("")
     public ResponseEntity<List<Category>> getAllCategories(
             @RequestParam("page") int page,
             @RequestParam("limit") int limit) {
         List<Category> categories = categoryService.getAllCategories();
+        /*
+        this.kafkaTemplate.executeInTransaction(status -> {
+            categories.forEach(category -> kafkaTemplate.send("get-all-categories", category));
+            return null;
+        });
+         */
+        this.kafkaTemplate.send("get-all-categories", categories);
         return ResponseEntity.ok(categories);
     }
 
@@ -35,7 +45,10 @@ public class CategoryController {
             List<String> res = result.getFieldErrors().stream().map(FieldError::getDefaultMessage).toList();
             return ResponseEntity.badRequest().body(res);
         }
-        categoryService.createCategory(categoryDTO);
+        Category category = categoryService.createCategory(categoryDTO);
+        // kafka action
+        this.kafkaTemplate.send("insert-a-category", category);// producer
+        this.kafkaTemplate.setMessageConverter(new CategoryMessageConvert());
         return ResponseEntity.ok("get categories done" + categoryDTO);
 
     }
